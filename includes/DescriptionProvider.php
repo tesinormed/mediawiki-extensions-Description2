@@ -55,7 +55,7 @@ class DescriptionProvider extends HtmlFormatter {
 	public function element( SerializerNode $parent, SerializerNode $node, $contents ): string {
 		// get the node's classes
 		$nodeClasses = $node->attrs->getValues()['class'] ?? null;
-		if ( $nodeClasses ) {
+		if ( $nodeClasses !== null ) {
 			// turn this into an array
 			$nodeClasses = explode( ' ', $nodeClasses );
 		} else {
@@ -65,7 +65,7 @@ class DescriptionProvider extends HtmlFormatter {
 		// for each of the ignore selectors
 		foreach ( $this->ignoreSelectors as $ignoreSelector ) {
 			// get the tag name and the class name
-			[ $tagName, $className ] = array_pad( explode( '.', $ignoreSelector ), 2, null );
+			@[ $tagName, $className ] = explode( '.', $ignoreSelector );
 
 			// if the tag name doesn't match, continue
 			if ( $tagName !== null && $node->name !== $tagName ) {
