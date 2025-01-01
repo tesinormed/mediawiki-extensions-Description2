@@ -73,7 +73,7 @@ class DescriptionProvider extends HtmlFormatter {
 			}
 
 			// if the class name doesn't match, continue
-			if ( $className !== null && !isset( $nodeClasses[$className] ) ) {
+			if ( $className !== null && !in_array( $className, $nodeClasses ) ) {
 				continue;
 			}
 
