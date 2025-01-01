@@ -4,27 +4,16 @@ namespace MediaWiki\Extension\Description2;
 
 use Config;
 use ConfigFactory;
-use OutputPage;
+use MediaWiki\Hook\OutputPageParserOutputHook;
+use MediaWiki\Hook\ParserAfterTidyHook;
+use MediaWiki\Hook\ParserFirstCallInitHook;
 use Parser;
-use ParserOutput;
-
-/**
- * Description2 – Adds meaningful description <meta> tag to MW pages and into the parser output
- *
- * @file
- * @ingroup Extensions
- * @author Daniel Friesen (http://danf.ca/mw/)
- * @copyright Copyright 2010 – Daniel Friesen
- * @license GPL-2.0-or-later
- * @link https://www.mediawiki.org/wiki/Extension:Description2 Documentation
- */
 
 class Hooks implements
-	\MediaWiki\Hook\ParserAfterTidyHook,
-	\MediaWiki\Hook\ParserFirstCallInitHook,
-	\MediaWiki\Hook\OutputPageParserOutputHook
+	ParserAfterTidyHook,
+	ParserFirstCallInitHook,
+	OutputPageParserOutputHook
 {
-
 	/** @var Config */
 	private Config $config;
 
@@ -32,99 +21,73 @@ class Hooks implements
 	private DescriptionProvider $descriptionProvider;
 
 	/** @var int */
-	private int $maxChars;
+	private int $maximumLength;
 
 	/**
 	 * @param ConfigFactory $configFactory
 	 */
 	public function __construct(
-		ConfigFactory $configFactory,
-		DescriptionProvider $descriptionProvider
+		ConfigFactory $configFactory
 	) {
-		$this->config = $configFactory->makeConfig( 'Description2' );
-		$this->descriptionProvider = $descriptionProvider;
-		$this->maxChars = $this->config->get( 'DescriptionMaxChars' );
+		$this->config = $configFactory->makeConfig( 'description2' );
+		$this->descriptionProvider = new DescriptionProvider( $this->config->get( 'Description2IgnoreSelectors' ) );
+		$this->maximumLength = $this->config->get( 'Description2MaximumLength' );
+	}
+
+	/**
+	 * @link https://www.mediawiki.org/wiki/Manual:Hooks/ParserFirstCallInit
+	 * @inheritDoc
+	 */
+	public function onParserFirstCallInit( $parser ): void {
+		if ( $this->config->get( 'Description2EnableParserFunction' ) ) {
+			// parser function is enabled
+			$parser->setFunctionHook(
+				'description2',
+				[ Description2::class, 'onParserFunction' ],
+				Parser::SFH_OBJECT_ARGS
+			);
+		}
 	}
 
 	/**
 	 * @link https://www.mediawiki.org/wiki/Manual:Hooks/ParserAfterTidy
-	 * @param Parser $parser The parser.
-	 * @param string &$text The page text.
-	 * @return bool
+	 * @inheritDoc
 	 */
-	public function onParserAfterTidy( $parser, &$text ) {
+	public function onParserAfterTidy( $parser, &$text ): void {
 		$parserOutput = $parser->getOutput();
 
-		// Avoid running the algorithm on interface messages which may waste time
+		// avoid running for interface messages
 		if ( $parser->getOptions()->getInterfaceMessage() ) {
-			return true;
+			return;
 		}
 
-		// Avoid running the algorithm multiple times if we already have determined the description. This may happen
-		// on file pages.
-		if ( method_exists( $parserOutput, 'getPageProperty' ) ) {
-			// MW 1.38+
-			$description = $parserOutput->getPageProperty( 'description' );
-		} else {
-			$description = $parserOutput->getProperty( 'description' );
-		}
+		// avoid running if there's already a description
+		$description = $parserOutput->getPageProperty( 'description' );
 		if ( $description ) {
-			return true;
+			return;
 		}
 
-		$desc = $this->descriptionProvider->derive( $text );
-		if ( !$desc ) {
-			return true;
+		// extract the description
+		$description = $this->descriptionProvider->extractDescription( $text );
+		// if the maximum length is set
+		if ( $this->maximumLength > 0 ) {
+			// limit the length
+			$description = Description2::truncate( $description, $this->maximumLength );
 		}
 
-		if ( $this->maxChars > 0 ) {
-			$truncated = Description2::getFirstChars( $desc, $this->maxChars );
-			if ( $truncated !== $desc ) {
-				$desc = $truncated;
-				if ( !preg_match( '/\p{P}$/u', $truncated ) ) {
-					$desc = $truncated . wfMessage( 'ellipsis' )->text();
-				}
-			}
-		}
-
-		Description2::setDescription( $parser, $desc );
-		return true;
+		// set the description
+		Description2::setDescription( $parser, $description );
 	}
 
 	/**
-	 * @param Parser $parser The parser.
-	 * @return bool
+	 * @link https://www.mediawiki.org/wiki/Manual:Hooks/OutputPageParserOutput
+	 * @inheritDoc
 	 */
-	public function onParserFirstCallInit( $parser ) {
-		if ( !$this->config->get( 'EnableMetaDescriptionFunctions' ) ) {
-			// Functions and tags are disabled
-			return true;
-		}
-		$parser->setFunctionHook(
-			'description2',
-			[ Description2::class, 'parserFunctionCallback' ],
-			Parser::SFH_OBJECT_ARGS
-		);
-		return true;
-	}
-
-	/**
-	 * @param OutputPage $out The output page to add the meta element to.
-	 * @param ParserOutput $parserOutput The parser output to get the description from.
-	 */
-	public function onOutputPageParserOutput( $out, $parserOutput ): void {
-		// Export the description from the main parser output into the OutputPage
-		if ( method_exists( $parserOutput, 'getPageProperty' ) ) {
-			// MW 1.38+
-			$description = $parserOutput->getPageProperty( 'description' );
-		} else {
-			$description = $parserOutput->getProperty( 'description' );
-			if ( $description === false ) {
-				$description = null;
-			}
-		}
+	public function onOutputPageParserOutput( $outputPage, $parserOutput ): void {
+		// add the description into the page's metadata
+		$description = $parserOutput->getPageProperty( 'description' );
 		if ( $description !== null ) {
-			$out->addMeta( 'description', $description );
+			$outputPage->addMeta( 'description', $description );
 		}
 	}
 }

@@ -1,7 +1,5 @@
-*~
-*.kate-swp
-.*.swp
-node_modules/**
-vendor/**
-composer.lock
-/.eslintcache
+# Composer
+/composer.lock
+/vendor
+# JetBrains
+/.idea

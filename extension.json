@@ -1,71 +1,82 @@
 {
 	"name": "Description2",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"author": [
-		"[http://danf.ca/mw/ Daniel Friesen]"
+		"[http://danf.ca/mw/ Daniel Friesen]",
+		"tesinormed"
 	],
-	"url": "https://www.mediawiki.org/wiki/Extension:Description2",
+	"url": "https://github.com/tesinormed/mediawiki-extensions-Description2",
 	"descriptionmsg": "description2-desc",
 	"license-name": "GPL-2.0-or-later",
 	"type": "other",
 	"requires": {
+		"platform": {
+			"php": ">= 8.1"
+		},
 		"MediaWiki": ">= 1.38.0"
 	},
 	"config": {
-		"EnableMetaDescriptionFunctions": false,
-		"DescriptionMaxChars": 300,
-		"DescriptionAlgorithm": "MediaWiki\\Extension\\Description2\\RemexDescriptionProvider",
-		"DescriptionRemoveElements": [
-			"table",
-			"div",
-			"script",
-			"style",
-			"figure",
-			"input",
-			"div.infobox",
-			"div.ambox",
-			"div.dmbox",
-			"ul.gallery",
-			".mw-editsection",
-			"sup.reference",
-			"ul.references",
-			".error",
-			".nomobile",
-			".noprint",
-			".noexcerpt",
-			".sortkey"
-		]
+		"Description2EnableParserFunction": {
+			"value": true
+		},
+		"Description2MaximumLength": {
+			"value": 400
+		},
+		"Description2IgnoreSelectors": {
+			"value": [
+				"h1",
+				"h2",
+				"h3",
+				"h4",
+				"h5",
+				"h6",
+				"table",
+				"div",
+				"script",
+				"style",
+				"figure",
+				"input",
+				"div.infobox",
+				"div.ambox",
+				"div.dmbox",
+				"ul.gallery",
+				".mw-editsection",
+				"sup.reference",
+				"ul.references",
+				".error",
+				".nomobile",
+				".noprint",
+				".noexcerpt",
+				".sortkey"
+			]
+		}
 	},
 	"ConfigRegistry": {
-		"Description2": "GlobalVarConfig::newInstance"
+		"description2": "GlobalVarConfig::newInstance"
 	},
-	"ServiceWiringFiles": [
-		"includes/ServiceWiring.php"
-	],
 	"AutoloadNamespaces": {
 		"MediaWiki\\Extension\\Description2\\": "includes/"
 	},
-	"ExtensionMessagesFiles": {
-		"Description2Magic": "Description2.i18n.magic.php"
+	"HookHandlers": {
+		"main": {
+			"class": "MediaWiki\\Extension\\Description2\\Hooks",
+			"services": [
+				"ConfigFactory"
+			]
+		}
+	},
+	"Hooks": {
+		"ParserFirstCallInit": "main",
+		"ParserAfterTidy": "main",
+		"OutputPageParserOutput": "main"
 	},
 	"MessagesDirs": {
 		"Description2": [
 			"i18n"
 		]
 	},
-	"HookHandlers": {
-		"Description2": {
-			"class": "MediaWiki\\Extension\\Description2\\Hooks",
-			"services": [
-				"ConfigFactory",
-				"Description2.DescriptionProvider"
-			]
-		}
+	"ExtensionMessagesFiles": {
+		"Description2Magic": "Description2.i18n.magic.php"
 	},
-	"Hooks": {
-		"OutputPageParserOutput": "Description2",
-		"ParserAfterTidy": "Description2",
-		"ParserFirstCallInit": "Description2"
-	},
-	"manifest_version": 1
+	"manifest_version": 2
 }
