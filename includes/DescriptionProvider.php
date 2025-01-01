@@ -58,6 +58,8 @@ class DescriptionProvider extends HtmlFormatter {
 		if ( $nodeClasses ) {
 			// turn this into an array
 			$nodeClasses = explode( ' ', $nodeClasses );
+		} else {
+			$nodeClasses = [];
 		}
 
 		// for each of the ignore selectors
