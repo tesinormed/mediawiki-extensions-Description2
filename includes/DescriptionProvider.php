@@ -53,11 +53,14 @@ class DescriptionProvider extends HtmlFormatter {
 	 * @return string
 	 */
 	public function element( SerializerNode $parent, SerializerNode $node, $contents ): string {
+		// sanity check
+		if ( $contents === null ) {
+			return '';
+		}
+
 		// get the node's classes
-		$nodeClasses = $node->attrs->getValues()['class'] ?? null;
-		if ( $nodeClasses !== null ) {
-			// turn this into an array
-			$nodeClasses = explode( ' ', $nodeClasses );
+		if ( isset( $node->attrs['class'] ) && $node->attrs['class'] !== '' ) {
+			$nodeClasses = explode( ' ', $node->attrs['class'] );
 		} else {
 			$nodeClasses = [];
 		}
@@ -67,22 +70,19 @@ class DescriptionProvider extends HtmlFormatter {
 			// get the tag name and the class name
 			@[ $tagName, $className ] = explode( '.', $ignoreSelector );
 
-			// if the tag name doesn't match, continue
-			if ( $tagName !== null && $node->name !== $tagName ) {
-				continue;
+			// if the tag name matches, discard this tag
+			if ( $tagName !== null && $node->name == $tagName ) {
+				return '';
 			}
 
-			// if the class name doesn't match, continue
-			if ( $className !== null && !in_array( $className, $nodeClasses ) ) {
-				continue;
+			// if the class name matches, discard this tag
+			if ( $className !== null && in_array( $className, $nodeClasses ) ) {
+				return '';
 			}
-
-			// one of the above matched, ignore this tag
-			return '';
 		}
 
 		// none of the ignore selectors matched, return this tag's contents
-		return $contents ?? '';
+		return $contents;
 	}
 
 	/**
