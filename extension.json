@@ -1,6 +1,6 @@
 {
 	"name": "Description2",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"author": [
 		"[http://danf.ca/mw/ Daniel Friesen]",
 		"tesinormed"
@@ -36,9 +36,7 @@
 				"style",
 				"figure",
 				"input",
-				"div.infobox",
-				"div.ambox",
-				"div.dmbox",
+				".infobox",
 				"ul.gallery",
 				".mw-editsection",
 				"sup.reference",
