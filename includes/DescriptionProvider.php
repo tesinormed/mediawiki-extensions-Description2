@@ -100,6 +100,6 @@ class DescriptionProvider extends HtmlFormatter {
 			'fragmentName' => 'body',
 		] );
 
-		return trim( $serializer->getResult() );
+		return preg_replace( "/\n+/", "\n", trim( $serializer->getResult() ) );
 	}
 }
