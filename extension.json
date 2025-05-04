@@ -1,6 +1,6 @@
 {
 	"name": "Description2",
-	"version": "0.5.7",
+	"version": "0.6.0",
 	"author": [
 		"[http://danf.ca/mw/ Daniel Friesen]",
 		"tesinormed"
@@ -59,14 +59,17 @@
 		"main": {
 			"class": "MediaWiki\\Extension\\Description2\\Hooks",
 			"services": [
-				"ConfigFactory"
+				"ConfigFactory",
+				"PageProps"
 			]
 		}
 	},
 	"Hooks": {
 		"ParserFirstCallInit": "main",
 		"ParserAfterTidy": "main",
-		"OutputPageParserOutput": "main"
+		"OutputPageParserOutput": "main",
+		"ApiOpenSearchSuggest": "main",
+		"SearchResultProvideDescription": "main"
 	},
 	"MessagesDirs": {
 		"Description2": [
