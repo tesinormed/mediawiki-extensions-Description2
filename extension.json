@@ -1,6 +1,6 @@
 {
 	"name": "Description2",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"author": [
 		"[http://danf.ca/mw/ Daniel Friesen]",
 		"tesinormed"
@@ -10,10 +10,10 @@
 	"license-name": "GPL-2.0-or-later",
 	"type": "other",
 	"requires": {
+		"MediaWiki": ">= 1.43.0",
 		"platform": {
 			"php": ">= 8.1"
-		},
-		"MediaWiki": ">= 1.38.0"
+		}
 	},
 	"config": {
 		"Description2EnableParserFunction": {

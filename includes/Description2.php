@@ -8,11 +8,7 @@ use PPFrame;
 class Description2 {
 	private const TRUNCATION_MARKER = '&hellip;';
 
-	/**
-	 * @param Parser $parser
-	 * @param string $description
-	 */
-	public static function setDescription( Parser $parser, string $description ): void {
+	public static function setDescription( Parser $parser, string $description, bool $custom = false ): void {
 		$parserOutput = $parser->getOutput();
 
 		// if the description page property doesn't exist yet
@@ -20,20 +16,15 @@ class Description2 {
 		if ( $parserOutput->getPageProperty( 'description' ) === null && $description !== '' ) {
 			// set the description page property
 			$parserOutput->setPageProperty( 'description', $description );
+			$parserOutput->setPageProperty( 'description_is_custom', $custom );
 		}
 	}
 
-	/**
-	 * @param Parser $parser
-	 * @param PPFrame $frame
-	 * @param string[] $args
-	 * @return string
-	 */
 	public static function onParserFunction( Parser $parser, PPFrame $frame, array $args ): string {
 		// if a description is given
 		if ( isset( $args[0] ) ) {
 			// set the description
-			self::setDescription( $parser, $frame->expand( $args[0] ) );
+			self::setDescription( $parser, $frame->expand( $args[0] ), custom: true );
 		}
 		// return nothing (no rendered output)
 		return '';
