@@ -11,12 +11,8 @@ use Wikimedia\RemexHtml\TreeBuilder\Dispatcher;
 use Wikimedia\RemexHtml\TreeBuilder\TreeBuilder;
 
 class DescriptionProvider extends HtmlFormatter {
-	/** @var string[] */
 	private array $ignoreSelectors;
 
-	/**
-	 * @param string[] $ignoreSelectors
-	 */
 	public function __construct( array $ignoreSelectors ) {
 		parent::__construct();
 		$this->ignoreSelectors = $ignoreSelectors;
@@ -24,10 +20,7 @@ class DescriptionProvider extends HtmlFormatter {
 
 	/**
 	 * Skips document starter tags.
-	 *
-	 * @param ?string $fragmentNamespace
-	 * @param ?string $fragmentName
-	 * @return string
+	 * @inheritDoc
 	 */
 	public function startDocument( $fragmentNamespace, $fragmentName ): string {
 		return '';
@@ -35,10 +28,7 @@ class DescriptionProvider extends HtmlFormatter {
 
 	/**
 	 * Skips comments.
-	 *
-	 * @param SerializerNode $parent
-	 * @param string $text
-	 * @return string
+	 * @inheritDoc
 	 */
 	public function comment( SerializerNode $parent, $text ): string {
 		return '';
@@ -46,11 +36,7 @@ class DescriptionProvider extends HtmlFormatter {
 
 	/**
 	 * Ignores specific HTML tags and then removes the remaining HTML tags to extract the text.
-	 *
-	 * @param SerializerNode $parent
-	 * @param SerializerNode $node
-	 * @param ?string $contents
-	 * @return string
+	 * @inheritDoc
 	 */
 	public function element( SerializerNode $parent, SerializerNode $node, $contents ): string {
 		// sanity check
@@ -68,7 +54,7 @@ class DescriptionProvider extends HtmlFormatter {
 		// for each of the ignore selectors
 		foreach ( $this->ignoreSelectors as $ignoreSelector ) {
 			// get the tag name and the class name
-			@[ $tagName, $className ] = explode( '.', $ignoreSelector );
+			[ $tagName, $className ] = explode( '.', $ignoreSelector ) + [ null, null ];
 
 			// if the tag name matches, discard this tag
 			if ( $tagName !== null && $node->name == $tagName ) {
@@ -85,10 +71,6 @@ class DescriptionProvider extends HtmlFormatter {
 		return $contents;
 	}
 
-	/**
-	 * @param string $text
-	 * @return string
-	 */
 	public function extractDescription( string $text ): string {
 		$serializer = new Serializer( $this );
 		$treeBuilder = new TreeBuilder( $serializer );

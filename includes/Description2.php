@@ -2,8 +2,9 @@
 
 namespace MediaWiki\Extension\Description2;
 
-use Parser;
-use PPFrame;
+use MediaWiki\Parser\Parser;
+use MediaWiki\Parser\PPFrame;
+use MediaWiki\Parser\Sanitizer;
 
 class Description2 {
 	private const TRUNCATION_MARKER = '&hellip;';
@@ -16,7 +17,7 @@ class Description2 {
 		if ( $parserOutput->getPageProperty( 'description' ) === null && $description !== '' ) {
 			// set the description page property
 			$parserOutput->setPageProperty( 'description', $description );
-			$parserOutput->setPageProperty( 'description_is_custom', $custom );
+			$parserOutput->setPageProperty( 'description_is_custom', (string)$custom );
 		}
 	}
 
@@ -24,7 +25,7 @@ class Description2 {
 		// if a description is given
 		if ( isset( $args[0] ) ) {
 			// set the description
-			self::setDescription( $parser, $frame->expand( $args[0] ), custom: true );
+			self::setDescription( $parser, Sanitizer::removeSomeTags( $frame->expand( $args[0] ) ), custom: true );
 		}
 		// return nothing (no rendered output)
 		return '';
